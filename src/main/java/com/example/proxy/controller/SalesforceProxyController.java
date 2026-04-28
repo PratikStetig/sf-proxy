@@ -39,7 +39,7 @@ public class SalesforceProxyController {
     private final RestTemplate restTemplate = buildRestTemplate();
 
     @RequestMapping("/**")
-    public ResponseEntity<String> proxy(
+    public ResponseEntity<byte[]> proxy(
             HttpServletRequest request,
             @RequestBody(required = false) String body) {
 
@@ -83,8 +83,8 @@ public class SalesforceProxyController {
             logger.info("Headers: {}", sfHeaders);
             logger.info("Body: {}", body);
 
-            ResponseEntity<String> sfResponse = restTemplate.exchange(
-                    sfUrl, method, entity, String.class);
+            ResponseEntity<byte[]> sfResponse = restTemplate.exchange(
+                    sfUrl, method, entity, byte[].class);
 
             // Log response from Salesforce
             logger.info("=== Response from Salesforce ===");
@@ -102,19 +102,19 @@ public class SalesforceProxyController {
             logger.error("Response Body: {}", ex.getResponseBodyAsString());
             return ResponseEntity
                     .status(ex.getStatusCode())
-                    .body(ex.getResponseBodyAsString());
+                    .body(ex.getResponseBodyAsByteArray());
 
         } catch (Exception ex) {
             logger.error("=== Proxy Exception ===", ex);
             return ResponseEntity
                     .status(HttpStatus.BAD_GATEWAY)
-                    .body("{\"error\": \"Proxy error: " + ex.getMessage() + "\"}");
+                    .body(("{\"error\": \"Proxy error: " + ex.getMessage() + "\"}").getBytes());
         }
     }
 
 
     @RequestMapping("/heroku-api/**")
-    public ResponseEntity<String> proxyHeroku(
+    public ResponseEntity<byte[]> proxyHeroku(
             HttpServletRequest request,
             @RequestBody(required = false) String body) {
 
@@ -125,7 +125,7 @@ public class SalesforceProxyController {
     }
 
 
-    private ResponseEntity<String> forward(
+    private ResponseEntity<byte[]> forward(
             HttpServletRequest request,
             String body,
             String targetUrl) {
@@ -142,8 +142,8 @@ public class SalesforceProxyController {
             HttpMethod method = HttpMethod.valueOf(request.getMethod());
             HttpEntity<String> entity = new HttpEntity<>(body, headers);
 
-            ResponseEntity<String> response = restTemplate.exchange(
-                    targetUrl, method, entity, String.class
+            ResponseEntity<byte[]> response = restTemplate.exchange(
+                    targetUrl, method, entity, byte[].class
             );
 
             return ResponseEntity
@@ -151,14 +151,15 @@ public class SalesforceProxyController {
                     .body(response.getBody());
 
         } catch (HttpClientErrorException | HttpServerErrorException ex) {
+
             return ResponseEntity
                     .status(ex.getStatusCode())
-                    .body(ex.getResponseBodyAsString());
+                    .body(ex.getResponseBodyAsByteArray());
 
         } catch (Exception ex) {
             return ResponseEntity
                     .status(HttpStatus.BAD_GATEWAY)
-                    .body("{\"error\": \"Proxy error: " + ex.getMessage() + "\"}");
+                    .body(("{\"error\": \"Proxy error: " + ex.getMessage() + "\"}").getBytes());
         }
     }
 
