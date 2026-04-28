@@ -70,7 +70,7 @@ public class SalesforceProxyController {
             sfHeaders.set("Authorization", request.getHeader("Authorization")); // mobile's token
             sfHeaders.set("Content-Type", "application/json");
             sfHeaders.set("Accept", "application/json");
-            sfHeaders.set("User-Agent", "LnTRealty/1.0"); // fixed UA
+            sfHeaders.set("User-Agent", "LnTRealty/1.0");
             sfHeaders.set("Connection", "keep-alive");
 
             HttpMethod method = HttpMethod.valueOf(request.getMethod());
@@ -118,7 +118,7 @@ public class SalesforceProxyController {
             HttpServletRequest request,
             @RequestBody(required = false) String body) {
 
-        String herokuPath = request.getRequestURI().replace("/heroku-api", "");
+        String herokuPath = request.getRequestURI().replace("sf-api/heroku-api/", "");
         String targetUrl = buildTargetUrl(herokuBaseUrl, herokuPath, request.getQueryString());
 
         return forward(request, body, targetUrl);
@@ -131,17 +131,11 @@ public class SalesforceProxyController {
             String targetUrl) {
 
         try {
-            String authHeader = request.getHeader("Authorization");
-            if (authHeader == null || authHeader.isBlank()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body("{\"error\": \"" + "Missing Authorization header" + "\"}");
-            }
 
             HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", authHeader);
             headers.set("Content-Type", "application/json");
             headers.set("Accept", "application/json");
-            headers.set("User-Agent", "MyCompanyIntegration/1.0");
+            headers.set("User-Agent", "LnTRealty/1.0");
             headers.set("Connection", "keep-alive");
 
             HttpMethod method = HttpMethod.valueOf(request.getMethod());
