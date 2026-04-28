@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+
+  localstack:
+    image: localstack/localstack:latest
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=secretsmanager
+      - DEFAULT_REGION=ap-south-1
+      - AWS_DEFAULT_REGION=ap-south-1
+    volumes:
+      - localstack_data:/var/lib/localstack
+
+volumes:
+  redis_data:
+  localstack_data:
