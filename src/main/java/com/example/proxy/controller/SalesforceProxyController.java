@@ -133,6 +133,7 @@ public class SalesforceProxyController {
         try {
 
             HttpHeaders headers = new HttpHeaders();
+            headers.set("x-access-token", request.getHeader("x-access-token") == null ? "" : request.getHeader("x-access-token"));
             headers.set("Content-Type", "application/json");
             headers.set("Accept", "application/json");
             headers.set("User-Agent", "LnTRealty/1.0");
