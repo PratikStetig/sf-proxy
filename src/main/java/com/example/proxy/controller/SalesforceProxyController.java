@@ -25,6 +25,9 @@ public class SalesforceProxyController {
     @Value("${salesforce.instance-url}")
     private String instanceUrl;
 
+    @Value("${heroku.base-url}")
+    private String herokuBaseUrl;
+
     private static final Set<String> STRIP_HEADERS = Set.of(
             "x-forwarded-for",
             "x-real-ip",
@@ -46,7 +49,7 @@ public class SalesforceProxyController {
             logger.info("Method: {}", request.getMethod());
             logger.info("URI: {}", request.getRequestURI());
             logger.info("Query: {}", request.getQueryString());
-            
+
             Enumeration<String> headerNames = request.getHeaderNames();
             while (headerNames.hasMoreElements()) {
                 String headerName = headerNames.nextElement();
@@ -108,6 +111,69 @@ public class SalesforceProxyController {
                     .body("{\"error\": \"Proxy error: " + ex.getMessage() + "\"}");
         }
     }
+
+
+    @RequestMapping("/heroku-api/**")
+    public ResponseEntity<String> proxyHeroku(
+            HttpServletRequest request,
+            @RequestBody(required = false) String body) {
+
+        String herokuPath = request.getRequestURI().replace("/heroku-api", "");
+        String targetUrl = buildTargetUrl(herokuBaseUrl, herokuPath, request.getQueryString());
+
+        return forward(request, body, targetUrl);
+    }
+
+
+    private ResponseEntity<String> forward(
+            HttpServletRequest request,
+            String body,
+            String targetUrl) {
+
+        try {
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader == null || authHeader.isBlank()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("{\"error\": \"" + "Missing Authorization header" + "\"}");
+            }
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", authHeader);
+            headers.set("Content-Type", "application/json");
+            headers.set("Accept", "application/json");
+            headers.set("User-Agent", "MyCompanyIntegration/1.0");
+            headers.set("Connection", "keep-alive");
+
+            HttpMethod method = HttpMethod.valueOf(request.getMethod());
+            HttpEntity<String> entity = new HttpEntity<>(body, headers);
+
+            ResponseEntity<String> response = restTemplate.exchange(
+                    targetUrl, method, entity, String.class
+            );
+
+            return ResponseEntity
+                    .status(response.getStatusCode())
+                    .body(response.getBody());
+
+        } catch (HttpClientErrorException | HttpServerErrorException ex) {
+            return ResponseEntity
+                    .status(ex.getStatusCode())
+                    .body(ex.getResponseBodyAsString());
+
+        } catch (Exception ex) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_GATEWAY)
+                    .body("{\"error\": \"Proxy error: " + ex.getMessage() + "\"}");
+        }
+    }
+
+
+    private String buildTargetUrl(String base, String path, String queryString) {
+        String url = base.stripTrailing() + path;
+        if (queryString != null) url += "?" + queryString;
+        return url;
+    }
+
 
     private RestTemplate buildRestTemplate() {
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
