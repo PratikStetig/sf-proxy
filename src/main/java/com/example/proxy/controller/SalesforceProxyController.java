@@ -70,11 +70,7 @@ public class SalesforceProxyController {
             sfHeaders.set("Authorization", request.getHeader("Authorization")); // mobile's token
             sfHeaders.set("Content-Type", request.getHeader("Content-Type") == null ? "application/json" : request.getHeader("Content-Type"));
             sfHeaders.set("Accept", "application/json");
-<<<<<<< HEAD
-            sfHeaders.set("User-Agent", "LnTRealty/1.0");
-=======
             sfHeaders.set("User-Agent", "SobhaRealty/1.0");
->>>>>>> 776c214 (docker added)
             sfHeaders.set("Connection", "keep-alive");
 
             HttpMethod method = HttpMethod.valueOf(request.getMethod());
