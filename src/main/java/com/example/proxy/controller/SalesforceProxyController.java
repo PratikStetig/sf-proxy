@@ -67,6 +67,14 @@ public class SalesforceProxyController {
 
             // Forward mobile's SF token directly — just clean the headers
             HttpHeaders sfHeaders = new HttpHeaders();
+            sfHeaders.set("appversion", request.getHeader("appversion"));
+            sfHeaders.set("Cache-Control", request.getHeader("Cache-Control"));
+            sfHeaders.set("platformtype", request.getHeader("platformtype"));
+
+            if (request.getHeader("Content-Type") != null) {
+                sfHeaders.set("Content-Type", request.getHeader("Content-Type"));
+            }
+
             sfHeaders.set("Authorization", request.getHeader("Authorization")); // mobile's token
             sfHeaders.set("Content-Type", request.getHeader("Content-Type") == null ? "application/json" : request.getHeader("Content-Type"));
             sfHeaders.set("Accept", "application/json");
