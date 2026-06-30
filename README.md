@@ -41,8 +41,9 @@ sudo systemctl start docker
 ## Step 3: Clone Your Repository
 
 ```bash
-git clone https://github.com/your-username/your-repo.git
-cd your-repo
+git clone https://github.com/your-username/sobhapxy.git
+git@github.com:PratikStetig/sf-proxy.git
+cd sobhapxy
 ```
 
 ---
@@ -58,7 +59,7 @@ mvn clean package -DskipTests
 ## Step 5: Build the Docker Image
 
 ```bash
-docker build -t my-spring-app .
+docker build -t sobhapxy .
 ```
 
 ---
@@ -66,7 +67,7 @@ docker build -t my-spring-app .
 ## Step 6: Run the Container
 
 ```bash
-sudo docker run -d -p 5155:5155 --name spring-app my-spring-app
+sudo docker run -d -p 5155:5155 --name sobhapxy sobhapxy:latest
 ```
 
 The application will be accessible at `http://<your-ec2-public-ip>:5155`.
@@ -80,9 +81,9 @@ After pushing new changes to GitHub, run the following commands on the EC2 insta
 ```bash
 git pull
 mvn clean package -DskipTests
-docker build -t my-spring-app .
-docker stop spring-app && docker rm spring-app
-sudo docker run -d -p 5155:5155 --name spring-app my-spring-app
+docker build -t sobhapxy .
+docker stop sobhapxy && docker rm sobhapxy
+sudo docker run -d -p 5155:5155 --name sobhapxy sobhapxy:latest
 ```
 
 ---
@@ -92,9 +93,9 @@ sudo docker run -d -p 5155:5155 --name spring-app my-spring-app
 | Command | Description |
 |---------|-------------|
 | `docker ps` | List all running containers |
-| `docker logs spring-app` | View application logs |
-| `docker stop spring-app` | Stop the running container |
-| `docker rm spring-app` | Remove the container |
+| `docker logs sobhapxy` | View application logs |
+| `docker stop sobhapxy` | Stop the running container |
+| `docker rm sobhapxy` | Remove the container |
 | `docker images` | List all Docker images |
 
 ---
@@ -103,16 +104,14 @@ sudo docker run -d -p 5155:5155 --name spring-app my-spring-app
 
 Ensure the following inbound rules are configured in your EC2 Security Group:
 
-| Port | Protocol | Purpose       |
-|------|----------|---------------|
-| 22   | TCP      | SSH access    |
-| 5155 | TCP      | Application   |
+| Port | Protocol | Purpose     |
+|------|----------|-------------|
+| 22   | TCP      | SSH access  |
+| 5155 | TCP      | Application |
 
 ---
 
 **Note:** To run Docker commands without `sudo`, execute `sudo usermod -aG docker $USER` and reconnect to the instance.
-
-
 
 ```bash
 # View logs
@@ -122,6 +121,5 @@ docker logs sobhapxy
 docker logs -f sobhapxy
 
 # Last 100 lines
-docker logs --tail 100 spring-app
+docker logs --tail 100 sobhapxy
 ```
-
